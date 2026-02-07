@@ -28,8 +28,10 @@ This project allows you to control Daikin air conditioners (split units) via the
 | GND       | GND            | Ground      |
 
 
-
 > **Note**: Daikin `TX` goes to ESP `RX` (GPIO 3), and Daikin `RX` goes to ESP `TX` (GPIO 4).
+
+<img src="./img/daikin-s21-connector.jpg" width="400">
+<img src="./img/daikin-main-board.jpg" width="400">
 
 ## Configuration
 
@@ -110,3 +112,5 @@ Controls the AC unit. Parameters can be combined.
 
 ---
 **Disclaimer**: This software is not affiliated with Daikin. Use at your own risk. Connecting unverified hardware to your AC unit may void your warranty or cause damage.
+
+<img src="./img/debugging-time.jpg" width="400">
