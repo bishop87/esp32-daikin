@@ -22,8 +22,8 @@ This project allows you to control Daikin air conditioners (split units) via the
 | ESP32 Pin | Daikin S21 Pin | Description |
 |-----------|----------------|-------------|
 | 5V        | 5V             | Power Input |
-| GPIO 4(TX)| RX             | ESP TX -> AC RX |
 | GPIO 3(RX)| TX             | ESP RX <- AC TX |
+| GPIO 4(TX)| RX             | ESP TX -> AC RX |
 | n.c.      | +14V           | not connected |
 | GND       | GND            | Ground      |
 
