@@ -1,0 +1,29 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// S21 Pin Definitions
+// Using VSPI pins for separate RX/TX to hardware serial
+#define S21_RX_PIN 3 // Hardware RX (GPIO 3)
+#define S21_TX_PIN 4 // Hardware TX (GPIO 4)
+
+// Status LED (ESP32 C3 Super Mini: GPIO 8, Active LOW)
+#define LED_PIN 8
+#define LED_ON LOW
+#define LED_OFF HIGH
+
+// S21 Protocol Parameters
+#define S21_BAUD_RATE 2400
+#define S21_CONFIG SERIAL_8E2 // 8 data bits, Even parity, 2 stop bits
+
+// Debug Serial
+#define DEBUG_BAUD_RATE 115200
+
+// WiFi Configuration
+#define WIFI_SSID "YOUR_WIFI_SSID"
+#define WIFI_PASS "YOUR_WIFI_PASSWORD"
+#define API_PORT 80
+
+// Temperature Calibration
+#define OUTSIDE_TEMP_OFFSET -4.0
+
+#endif // CONFIG_H

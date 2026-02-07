@@ -1,0 +1,10 @@
+# Exclude sensitive configuration
+src/system/config.h
+
+# Exclude platformio/arduino build artifacts (if any)
+.pio/
+.vscode/
+build/
+*.bin
+*.elf
+.DS_Store

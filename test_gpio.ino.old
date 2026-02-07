@@ -1,0 +1,79 @@
+#include <Arduino.h>
+#include <SoftwareSerial.h>
+
+// Configuration for Arduino Nano / Generic Test
+// RX Pin: D8
+// TX Pin: D9
+// Connect S21 TX -> D8
+// Connect S21 RX -> D9
+// REMEMBER 5V Logic is fine for Nano, but Daikin might need pullups.
+
+// Using SoftwareSerial because Hardware Serial is used for USB debug
+const int S21_RX_PIN = 8;
+const int S21_TX_PIN = 9;
+
+SoftwareSerial S21Serial(S21_RX_PIN, S21_TX_PIN); // RX, TX
+
+void setup() {
+  Serial.begin(115200);
+  while (!Serial) {
+    ;
+  } // Wait for serial
+
+  Serial.println("\n=== Daikin S21 Active Polling Test (Nano/Uno) ===");
+  Serial.println("RX Pin: 8");
+  Serial.println("TX Pin: 9");
+  Serial.println("Protocol: 2400 8E2");
+
+  // Configure pins
+  pinMode(S21_RX_PIN, INPUT_PULLUP); // Important for Open Drain
+  pinMode(S21_TX_PIN, OUTPUT);
+
+  // Init S21 Serial, 2400 baud, 8E2 equivalent?
+  // SoftwareSerial supports 8N1 by default.
+  // Is 8E2 supported? Standard SoftwareSerial only allows parity config in
+  // newer versions or requires bit-banging. However, for basic testing, 2400
+  // baud is slow enough that 8N1 *might* catch readable data if we are lucky,
+  // but sending 8E2 is tricky.
+
+  // Actually, simple SoftwareSerial begin(baud) is usually 8N1.
+  // Sending 'F' (0x46) with Even Parity:
+  // Binary: 0100 0110 (3 ones -> Parity bit 1 to make it even)
+  // We might need to handle parity manually or use a better lib?
+  // For this simple test, let's try standard begin and see.
+  S21Serial.begin(2400);
+
+  Serial.println("S21 Serial Started (Approx 8N1 - might have framing errors)");
+}
+
+unsigned long lastPoll = 0;
+
+void loop() {
+  // Poll every 3 seconds
+  if (millis() - lastPoll > 3000) {
+    lastPoll = millis();
+    poll();
+  }
+
+  // Listen
+  while (S21Serial.available()) {
+    int r = S21Serial.read();
+    Serial.print("RX: 0x");
+    if (r < 0x10)
+      Serial.print("0");
+    Serial.print(r, HEX);
+    Serial.println();
+  }
+}
+
+void poll() {
+  // Sending 'F' command
+  // Note: If Daikin requires STRICT 8E2, this might be ignored by the AC
+  // if sending 8N1. But worth a try for connectivity.
+
+  uint8_t packet[] = {0x02, 'F', 'F', 0x03};
+
+  Serial.print("TX: F Command... ");
+  S21Serial.write(packet, 4);
+  Serial.println("Sent.");
+}
