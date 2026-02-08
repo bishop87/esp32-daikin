@@ -205,6 +205,17 @@ const char WEB_UI_HTML[] PROGMEM = R"rawliteral(
 
     <div class="card">
       <div class="info-row" style="display:block; border:none; padding-bottom:5px">
+        <div style="margin-bottom:10px; opacity:0.7">Impostazioni</div>
+      </div>
+      <div class="info-row" style="display:block; border:none; padding:10px 0">
+        <div style="font-size:12px; margin-bottom:5px; opacity:0.5">Nome Split</div>
+        <input type="text" id="splitName" placeholder="NomeSplit" style="width:100%; padding:8px; border-radius:5px; border:none; background:rgba(255,255,255,0.2); color:#fff;">
+        <button onclick="saveConfig(this)" style="margin-top:8px; padding:10px; width:100%; border-radius:10px; border:none; background:linear-gradient(135deg, #3b82f6, #2563eb); color:#fff; cursor:pointer">Salva Nome</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="info-row" style="display:block; border:none; padding-bottom:5px">
         <div style="margin-bottom:10px; opacity:0.7">Aggiornamento Firmware</div>
       </div>
       
@@ -257,6 +268,18 @@ const char WEB_UI_HTML[] PROGMEM = R"rawliteral(
              statusEl.style.color = '#ef4444'; // Red
              statusEl.style.opacity = '1';
         }
+
+        if (serverState.split_name) {
+            if (document.title !== serverState.split_name + " - Daikin") {
+                document.title = serverState.split_name + " - Daikin";
+                document.querySelector('h1').textContent = "🌡️ " + serverState.split_name;
+            }
+            if (document.activeElement.id !== 'splitName') {
+                document.getElementById('splitName').value = serverState.split_name;
+            }
+        }
+
+
 
       } catch (e) {
         const statusEl = document.getElementById('status');
@@ -326,6 +349,43 @@ const char WEB_UI_HTML[] PROGMEM = R"rawliteral(
         setTimeout(() => { document.getElementById('status').textContent = 'Connected'; }, 2000);
       } catch (e) {
         document.getElementById('status').textContent = 'Error sending command';
+      }
+    }
+
+    async function saveConfig(btn) {
+      const name = document.getElementById('splitName').value;
+      if (!name) return;
+      
+      const originalText = btn.textContent;
+      const originalBg = btn.style.background;
+      btn.textContent = 'Salvataggio...';
+      
+      try {
+        const res = await fetch('/set-config?name=' + encodeURIComponent(name));
+        if (res.ok) {
+            const data = await res.json();
+            btn.textContent = 'Salvato!';
+            btn.style.background = '#10b981';
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = originalBg;
+            }, 2000);
+            fetchStatus(); 
+        } else {
+            btn.textContent = 'Errore';
+            btn.style.background = '#ef4444';
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = originalBg;
+            }, 2000);
+        }
+      } catch (e) {
+        btn.textContent = 'Errore';
+        btn.style.background = '#ef4444';
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.background = originalBg;
+        }, 2000);
       }
     }
 

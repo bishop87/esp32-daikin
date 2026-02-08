@@ -11,10 +11,14 @@
 #include "src/system/logger.h"
 #include "src/web/web_ui.h"
 #include <HTTPUpdate.h>
+#include <Preferences.h>
 #include <Update.h>
 #include <WebServer.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
+
+Preferences preferences;
+String splitName = "NomeSplit";
 
 WebServer server(API_PORT);
 
@@ -31,9 +35,30 @@ void handleStatus() {
   json += "\"room_temp\":" + String(State.roomTemp) + ",";
   json += "\"outside_temp\":" + String(State.outsideTemp) + ",";
   json += "\"fan\":" + String(State.fan) + ",";
-  json += "\"connected\":" + String(S21.isConnected() ? "true" : "false");
+  json += "\"connected\":" + String(S21.isConnected() ? "true" : "false") + ",";
+  json += "\"split_name\":\"" + splitName + "\"";
   json += "}";
   server.send(200, "application/json", json);
+}
+
+void handleSetConfig() {
+  if (server.hasArg("name")) {
+    String newName = server.arg("name");
+    newName.trim();
+    if (newName.length() > 0) {
+      splitName = newName;
+      preferences.begin("daikin", false);
+      preferences.putString("split_name", splitName);
+      preferences.end();
+      server.send(200, "application/json",
+                  "{\"status\":\"ok\", \"name\":\"" + splitName + "\"}");
+      LOG("Config: Split Name set to %s", splitName.c_str());
+    } else {
+      server.send(400, "text/plain", "Invalid name");
+    }
+  } else {
+    server.send(400, "text/plain", "Missing 'name' parameter");
+  }
 }
 
 void handleSet() {
@@ -122,6 +147,12 @@ void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 #endif
 
+  // Initialize Preferences
+  preferences.begin("daikin", false); // Namespace "daikin", read/write
+  splitName = preferences.getString("split_name", "NomeSplit");
+  preferences.end();
+  LOG("Config: Split Name loaded: %s", splitName.c_str());
+
   // Initialize LED
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, LED_OFF); // Start OFF
@@ -164,7 +195,9 @@ void setup() {
     server.on("/", handleRoot);
     server.on("/status", handleStatus);
     server.on("/status", handleStatus);
+    server.on("/status", handleStatus);
     server.on("/set", handleSet);
+    server.on("/set-config", handleSetConfig);
 
     // OTA Routes
     server.on("/update-url", HTTP_POST, handleUpdateUrl);
