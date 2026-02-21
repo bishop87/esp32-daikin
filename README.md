@@ -81,10 +81,14 @@ Returns the current state of the AC unit.
   "room_temp": 25.5,
   "outside_temp": 30.0,
   "fan": 5,
+  "swing_v": false,
+  "swing_h": false,
   "connected": true
 }
 ```
 - `mode`: 1 (Auto), 2 (Dry), 3 (Cool), 4 (Heat), 6 (Fan)
+- `swing_v`: true if Vertical swing is active.
+- `swing_h`: true if Horizontal swing is active.
 - `connected`: `true` if S21 packets are being received (last 10s), `false` if disconnected/timeout.
 
 #### Set State
@@ -105,6 +109,21 @@ Controls the AC unit. Parameters can be combined.
   `http://<IP>/set?fan=10`
 - Turn OFF:
   `http://<IP>/set?power=off`
+
+#### Set Swing State
+**Endpoint**: `GET /set-swing`
+
+Controls the AC flap swing configuration independently of other settings. Both parameters must be provided.
+
+**Parameters**:
+- `v`: `1`, `true`, `on` to enable vertical swing, `0` or `false` otherwise.
+- `h`: `1`, `true`, `on` to enable horizontal swing, `0` or `false` otherwise.
+
+**Examples**:
+- Enable Both (Auto/3D):
+  `http://<IP>/set-swing?v=1&h=1`
+- Vertical Only:
+  `http://<IP>/set-swing?v=1&h=0`
 
 #### OTA Firmware Update (API)
 - **POST /update**: Multipart form upload with field name `update` containing the `.bin` file.

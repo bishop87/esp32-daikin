@@ -371,16 +371,10 @@ const char WEB_UI_HTML[] PROGMEM = R"rawliteral(
       updateUI();
     }
 
-    async function setSwing(v, h) {
+    function setSwing(v, h) {
       localState.swing_v = v;
       localState.swing_h = h;
       updateUI(); // Optimistic update
-      try {
-        await fetch(`/set-swing?v=${v ? 1 : 0}&h=${h ? 1 : 0}`);
-        setTimeout(() => fetchStatus(false), 2000); 
-      } catch (e) {
-        console.error('Error setting swing', e);
-      }
     }
 
     async function sendConfig() {
@@ -392,7 +386,16 @@ const char WEB_UI_HTML[] PROGMEM = R"rawliteral(
           mode: localState.mode,
           fan: localState.fan
         };
-        await fetch('/set?' + new URLSearchParams(params));
+        const swingParams = {
+          v: localState.swing_v ? '1' : '0',
+          h: localState.swing_h ? '1' : '0'
+        };
+        // Fire both requests in parallel
+        await Promise.all([
+            fetch('/set?' + new URLSearchParams(params)),
+            fetch('/set-swing?' + new URLSearchParams(swingParams))
+        ]);
+        
         // Don't sync local state after send - trust what user set (optimistic UI)
         document.getElementById('status').textContent = 'Sent!';
         setTimeout(() => { document.getElementById('status').textContent = 'Connected'; }, 2000);
