@@ -34,12 +34,13 @@ NON copiato senza comprensione.
 ---
 
 ### Constraints
-- MCU: ESP32 WROOM DEV KIT
+- MCU: ESP32 C3 super mini
 - IDE: Arduino IDE
 - Linguaggio: C++ (Arduino framework)
 - Comunicazione: S21 half-duplex, open-drain
 - Nessun uso del modulo WiFi Daikin originale
 - Nessun servizio cloud esterno
+- Non provare a compilare il codice, lo farò io con Arduino IDE
 
 ---
 

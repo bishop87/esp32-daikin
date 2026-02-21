@@ -35,6 +35,8 @@ void handleStatus() {
   json += "\"room_temp\":" + String(State.roomTemp) + ",";
   json += "\"outside_temp\":" + String(State.outsideTemp) + ",";
   json += "\"fan\":" + String(State.fan) + ",";
+  json += "\"swing_v\":" + String(State.swingV ? "true" : "false") + ",";
+  json += "\"swing_h\":" + String(State.swingH ? "true" : "false") + ",";
   json += "\"connected\":" + String(S21.isConnected() ? "true" : "false") + ",";
   json += "\"split_name\":\"" + splitName + "\"";
   json += "}";
@@ -88,6 +90,23 @@ void handleSet() {
 }
 
 // OTA Handlers
+void handleSetSwing() {
+  if (server.hasArg("v") && server.hasArg("h")) {
+    bool v = false;
+    bool h = false;
+    String argV = server.arg("v");
+    String argH = server.arg("h");
+    v = (argV == "1" || argV == "true" || argV == "on");
+    h = (argH == "1" || argH == "true" || argH == "on");
+
+    State.setSwing(v, h);
+    server.send(200, "application/json", "{\"status\":\"ok\"}");
+    LOG("API: Set Swing V=%d, H=%d", v, h);
+  } else {
+    server.send(400, "text/plain", "Missing 'v' or 'h' parameter");
+  }
+}
+
 void handleUpdateUrl() {
   if (!server.hasArg("url")) {
     server.send(400, "text/plain", "Missing url");
@@ -194,9 +213,8 @@ void setup() {
     // API Routes
     server.on("/", handleRoot);
     server.on("/status", handleStatus);
-    server.on("/status", handleStatus);
-    server.on("/status", handleStatus);
     server.on("/set", handleSet);
+    server.on("/set-swing", handleSetSwing);
     server.on("/set-config", handleSetConfig);
 
     // OTA Routes

@@ -130,6 +130,24 @@ const char WEB_UI_HTML[] PROGMEM = R"rawliteral(
     .fan-btn.active {
       background: linear-gradient(135deg, #7b2cbf, #5a189a);
     }
+    .swing-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .swing-btn {
+      padding: 10px 5px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      cursor: pointer;
+      font-size: 11px;
+      transition: all 0.3s;
+    }
+    .swing-btn.active {
+      background: linear-gradient(135deg, #f59e0b, #d97706); /* Orange */
+    }
     .send-btn {
       width: 100%;
       padding: 18px;
@@ -200,6 +218,16 @@ const char WEB_UI_HTML[] PROGMEM = R"rawliteral(
         </div>
       </div>
 
+      <div class="slider-container">
+        <div class="slider-label"><span>Movimento Alette</span></div>
+        <div class="swing-grid">
+          <button class="swing-btn" data-v="0" data-h="0" onclick="setSwing(false, false)">Fermo</button>
+          <button class="swing-btn" data-v="1" data-h="0" onclick="setSwing(true, false)">Verticale</button>
+          <button class="swing-btn" data-v="0" data-h="1" onclick="setSwing(false, true)">Orizz.</button>
+          <button class="swing-btn" data-v="1" data-h="1" onclick="setSwing(true, true)">3D</button>
+        </div>
+      </div>
+
       <button class="send-btn" onclick="sendConfig()">📤 INVIA</button>
     </div>
 
@@ -239,9 +267,9 @@ const char WEB_UI_HTML[] PROGMEM = R"rawliteral(
 
   <script>
     // Server state (from AC)
-    let serverState = { power: false, mode: 3, target_temp: 22, fan: 5, room_temp: 0, outside_temp: 0, connected: false };
+    let serverState = { power: false, mode: 3, target_temp: 22, fan: 5, room_temp: 0, outside_temp: 0, connected: false, swing_v: false, swing_h: false };
     // Local pending state (what user has selected)
-    let localState = { power: false, mode: 3, target_temp: 22, fan: 5 };
+    let localState = { power: false, mode: 3, target_temp: 22, fan: 5, swing_v: false, swing_h: false };
 
     async function fetchStatus(syncLocal = true) {
       try {
@@ -253,7 +281,9 @@ const char WEB_UI_HTML[] PROGMEM = R"rawliteral(
             power: serverState.power,
             mode: serverState.mode,
             target_temp: Math.round(serverState.target_temp),
-            fan: serverState.fan
+            fan: serverState.fan,
+            swing_v: serverState.swing_v,
+            swing_h: serverState.swing_h
           };
         }
         updateUI();
@@ -309,6 +339,13 @@ const char WEB_UI_HTML[] PROGMEM = R"rawliteral(
         b.classList.toggle('active', parseInt(b.dataset.fan) === localState.fan);
       });
 
+      // Swing buttons reflect LOCAL state
+      document.querySelectorAll('.swing-btn').forEach(b => {
+        const v = b.dataset.v === "1";
+        const h = b.dataset.h === "1";
+        b.classList.toggle('active', v === localState.swing_v && h === localState.swing_h);
+      });
+
       // Temp slider reflects LOCAL state
       document.getElementById('tempSlider').value = localState.target_temp;
       document.getElementById('tempValue').textContent = localState.target_temp + '°C';
@@ -332,6 +369,18 @@ const char WEB_UI_HTML[] PROGMEM = R"rawliteral(
     function selectFan(f) {
       localState.fan = f;
       updateUI();
+    }
+
+    async function setSwing(v, h) {
+      localState.swing_v = v;
+      localState.swing_h = h;
+      updateUI(); // Optimistic update
+      try {
+        await fetch(`/set-swing?v=${v ? 1 : 0}&h=${h ? 1 : 0}`);
+        setTimeout(() => fetchStatus(false), 2000); 
+      } catch (e) {
+        console.error('Error setting swing', e);
+      }
     }
 
     async function sendConfig() {

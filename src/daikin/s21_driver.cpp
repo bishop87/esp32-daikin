@@ -218,8 +218,8 @@ void S21Driver::pollState() {
 
 // On-demand polling: sends key queries and waits for responses
 void S21Driver::pollNow() {
-  const char *cmds[] = {"Ra", "RH", "F1"};
-  const int numCmds = 3;
+  const char *cmds[] = {"Ra", "RH", "F1", "F5"};
+  const int numCmds = 4;
 
   for (int i = 0; i < numCmds; i++) {
     g_ackReceived = false;

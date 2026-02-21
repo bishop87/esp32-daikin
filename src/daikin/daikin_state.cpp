@@ -126,6 +126,13 @@ void DaikinState::decodeFrame(const uint8_t *frame, size_t len) {
         LOG("Parsed Fan (G1): Unknown (Raw: %02X)", fanRaw);
       }
     }
+    // Decode G5: Swing
+    else if (type2 == '5' && len >= 4) {
+      uint8_t swingVal = frame[3] - '0';
+      this->swingV = (swingVal & 1) != 0;
+      this->swingH = (swingVal & 2) != 0;
+      LOG("Parsed Swing (G5): V=%d H=%d", this->swingV, this->swingH);
+    }
   }
 }
 
@@ -191,5 +198,28 @@ void DaikinState::setDaikinState(bool power, uint8_t mode, float temp,
   LOG("Sending Set Packet: Power=%s, Mode=%c, TempF=%d, Fan=%c",
       power ? "ON" : "OFF", modeChar, tempF, fanChar);
 
+  S21.sendFrame(payload, 6);
+}
+
+void DaikinState::setSwing(bool swingV, bool swingH) {
+  uint8_t payload[6];
+  payload[0] = 'D';
+  payload[1] = '5';
+
+  uint8_t val = 0;
+  if (swingV)
+    val += 1;
+  if (swingH)
+    val += 2;
+  if (swingV && swingH)
+    val += 4;
+
+  payload[2] = '0' + val;
+  payload[3] = (swingV || swingH) ? '?' : '0';
+  payload[4] = '0';
+  payload[5] = '0';
+
+  LOG("Sending Swing Packet: V=%d H=%d (byte0=%c byte1=%c)", swingV, swingH,
+      payload[2], payload[3]);
   S21.sendFrame(payload, 6);
 }
