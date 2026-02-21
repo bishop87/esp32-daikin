@@ -43,7 +43,7 @@ const char WEB_UI_HTML[] PROGMEM = R"rawliteral(
       text-align: center;
       font-size: 60px;
       font-weight: 200;
-      margin: 10px 0;
+      margin: -10px 0; /* Reduced margins around current temp */
     }
     .temp-display span { font-size: 32px; }
     .info-row {
@@ -188,8 +188,6 @@ const char WEB_UI_HTML[] PROGMEM = R"rawliteral(
     </div>
 
     <div class="card">
-      <button id="powerBtn" class="power-btn power-off" onclick="togglePower()">POWER OFF</button>
-      
       <div class="mode-grid">
         <button class="mode-btn" data-mode="1" onclick="selectMode(1)">Auto</button>
         <button class="mode-btn" data-mode="3" onclick="selectMode(3)">Cool</button>
@@ -228,7 +226,10 @@ const char WEB_UI_HTML[] PROGMEM = R"rawliteral(
         </div>
       </div>
 
-      <button class="send-btn" onclick="sendConfig()">📤 INVIA</button>
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button id="powerBtn" class="power-btn power-off" onclick="togglePower()" style="margin: 0; flex: 1;">POWER OFF</button>
+        <button class="send-btn" onclick="sendConfig()" style="margin: 0; flex: 1;">👆 INVIA</button>
+      </div>
     </div>
 
     <div class="card">
@@ -262,7 +263,10 @@ const char WEB_UI_HTML[] PROGMEM = R"rawliteral(
       <div id="otaStatus" style="text-align:center; font-size:12px; margin-top:10px; min-height:15px; color:#fbbf24"></div>
     </div>
 
-    <div class="status" id="status">Connecting...</div>
+    <div class="status">
+      <span id="status">Connecting...</span>
+      <span id="fwVersion" style="margin-left: 10px; opacity: 0.5;"></span>
+    </div>
   </div>
 
   <script>
@@ -297,6 +301,10 @@ const char WEB_UI_HTML[] PROGMEM = R"rawliteral(
              statusEl.textContent = 'Disconnected (Timeout)';
              statusEl.style.color = '#ef4444'; // Red
              statusEl.style.opacity = '1';
+        }
+        
+        if (serverState.fw_version) {
+             document.getElementById('fwVersion').textContent = 'v' + serverState.fw_version;
         }
 
         if (serverState.split_name) {

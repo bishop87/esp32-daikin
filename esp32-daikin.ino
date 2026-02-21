@@ -38,7 +38,8 @@ void handleStatus() {
   json += "\"swing_v\":" + String(State.swingV ? "true" : "false") + ",";
   json += "\"swing_h\":" + String(State.swingH ? "true" : "false") + ",";
   json += "\"connected\":" + String(S21.isConnected() ? "true" : "false") + ",";
-  json += "\"split_name\":\"" + splitName + "\"";
+  json += "\"split_name\":\"" + splitName + "\",";
+  json += "\"fw_version\":\"" + String(FW_VERSION) + "\"";
   json += "}";
   server.send(200, "application/json", json);
 }
