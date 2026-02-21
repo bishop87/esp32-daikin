@@ -224,7 +224,7 @@ const char WEB_UI_HTML[] PROGMEM = R"rawliteral(
           <button class="swing-btn" data-v="0" data-h="0" onclick="setSwing(false, false)">Fermo</button>
           <button class="swing-btn" data-v="1" data-h="0" onclick="setSwing(true, false)">Verticale</button>
           <button class="swing-btn" data-v="0" data-h="1" onclick="setSwing(false, true)">Orizz.</button>
-          <button class="swing-btn" data-v="1" data-h="1" onclick="setSwing(true, true)">3D</button>
+          <button class="swing-btn" data-v="1" data-h="1" onclick="setSwing(true, true)">Auto</button>
         </div>
       </div>
 
